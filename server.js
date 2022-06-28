@@ -14,16 +14,34 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+//express and db query
+//all info from department table
+db.query (`SELECT * FROM department`, (err, rows) => {
+console.log(rows);
+});
+
+//look at one department
+
+
+app.get('/', (req, res) => {
+    res.json({
+      message: 'Hello World'
+    });
+  });
+
 //catchall
 app.use((req, res) => {
     res.status(404).end();
   });
-  
+
 // listen/start server after DB connection
-db.connect(err => {
-      if (err) throw err;
-      console.log('Database connected.');
-      app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-      });
-    });
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+// db.connect(err => {
+//     if (err) throw err;
+//     console.log('Database connected.');
+//     app.listen(PORT, () => {
+//       console.log(`Server running on port ${PORT}`);
+//     });
+//   });
