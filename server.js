@@ -3,6 +3,8 @@
 //require
 const express = require("express");
 const db = require("./db/connection");
+//not sure if this goes here or in index file where will run inquirer
+// const cTable = require('console.table');
 
 //PORT and EXPRESS
 const PORT = process.env.PORT || 3001;
@@ -18,7 +20,7 @@ app.use((req, res) => {
   });
   
 // listen/start server after DB connection
-  db.connect(err => {
+db.connect(err => {
       if (err) throw err;
       console.log('Database connected.');
       app.listen(PORT, () => {
