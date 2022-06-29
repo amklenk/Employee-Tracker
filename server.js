@@ -1,10 +1,10 @@
-// Routes will start here and will be run through server.js
-//Will we put inquirer here after we move the routes to routes folder?
+//Create functions around these with class
 //require
 const db = require("./db/connection");
 const cTable = require('console.table');
 
 //db query
+//**These are department queries */
 //all info from department table
 db.query (`SELECT * FROM department`, (err, rows) => {
 console.log(rows);
@@ -32,6 +32,7 @@ console.log(rows);
 //     console.log("The ${params.name} department was deleted from the database.");
 //   });
 
+//**These are roles queries */
 //all info from roles table
 const sql = `SELECT roles.id, roles.title, roles.salary, department.name AS department
 FROM roles
@@ -75,3 +76,5 @@ db.query(sql, (err, rows) => {
 //     }
 // });
 
+//**These are employees queries */
+const sql2 = 'SELECT e.id, e.first_name, e.last_name, roles.title AS title, CONCAT(e2.first_name, " ", e2.last_name) AS manager, roles.salary AS salary, department.name AS department FROM employees AS e LEFT JOIN roles ON e.role_id = roles.id LEFT JOIN department ON roles.department_id = department.id LEFT JOIN employees as e2 on e2.id = e.id';
