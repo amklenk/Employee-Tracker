@@ -62,16 +62,16 @@ db.query(sql, (err, rows) => {
 //   });
 
 //update a role's salary
-const sql2 = `UPDATE roles SET salary = ? WHERE id = ?`;
-const params = [110000, 1];
+// const sql2 = `UPDATE roles SET salary = ? WHERE id = ?`;
+// const params = [110000, 1];
 
-db.query(sql2, params, (err, result) => {
-    if (err){
-        console.log("Sorry, that was not a correct update. Try again!");
-    } else if (!result.affectedRows) {
-        console.log("Role not found. Try again!");
-    } else {
-        console.log("The salary for the role you selected has been updated in the database.")
-    }
-});
+// db.query(sql2, params, (err, result) => {
+//     if (err){
+//         console.log("Sorry, that was not a correct update. Try again!");
+//     } else if (!result.affectedRows) {
+//         console.log("Role not found. Try again!");
+//     } else {
+//         console.log("The salary for the role you selected has been updated in the database.")
+//     }
+// });
 
