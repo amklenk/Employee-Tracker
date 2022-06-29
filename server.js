@@ -29,3 +29,13 @@ console.log(rows);
 //     }
 //     console.log(result);
 //   });
+
+//all info from roles table
+const sql = `SELECT roles.id, roles.title, roles.salary, department.name AS department
+FROM roles
+LEFT JOIN department ON roles.department_id = department.id`;
+db.query(sql, (err, rows) => {
+    console.log(rows)
+});
+
+//add a role
