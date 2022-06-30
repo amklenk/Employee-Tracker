@@ -3,12 +3,14 @@ const inquirer = require("inquirer");
 const Department = require("./lib/Department");
 const Roles = require("./lib/Roles");
 const Employees = require("./lib/Employees");
+const db = require("./db/connection");
 
 //Inquirer Arrays
-choicesArr = ["View all departments", "Add a department", "Delete a department", "View all roles", "Add a role", "Delete a role", "Update a role's salary", "View all employees", "View an employee by their manager", "Update an employee's manager", "Add an employee", "Delete an Employee", "View the budget of each department", "Quit"
+choicesArr = ["View all departments", "Add a department", "Delete a department", "View all roles", "Add a role", "Delete a role", "Update a role's salary", "View all employees", "View an employee by their manager", "View an employee by their role", "Update an employee's manager", "Add an employee", "Delete an Employee", "View the budget of each department", "Quit"
 ];
 
-addRoleInq = [{
+addRoleInq = function (departmentChoices) {
+    return [{
     type: "text",
     name: "title",
     message: "What is the title of the new role?",
@@ -18,14 +20,15 @@ addRoleInq = [{
       name: "salary",
       message: "What is the salary of the new role?",
   },
-  //TODO:how to update departments when a new one is added?
   {
       type: "list",
       name: "department",
       message: "What is the department of the new role?",
-      choices: ["Sales", "Engineering", "Finance", "Legal"]
-  }];
+      choices: departmentChoices
+  }]
+};
 
+//TODO: db call to have updated
   updateRoleInq= [
     {
         type: "list",
@@ -38,6 +41,8 @@ addRoleInq = [{
     name: "salary",
     message: "What is the new salary of the role?",
 }]
+
+//class and methods to run game
 class Run {
  constructor () {
     this.roles = new Roles();
@@ -49,6 +54,7 @@ class Run {
     console.log("Welcome to Employee-Tracker!");
     this.startProgram();
  }
+
  startProgram () {
     inquirer
     .prompt({
@@ -57,13 +63,10 @@ class Run {
       message: "What would you like to do?",
       choices: choicesArr
     })
-    //destructure name from the prompt object
     .then(({ action }) => {
       switch (action){
         case "View all departments":
-        this.department.getDepartments();
-        // TODO: this doesn't display correctly and go back to initial prompt
-        this.startProgram();
+        this.department.getDepartments(this.startProgram);
         break;
         case "Add a department":
         this.addDepartment();
@@ -72,8 +75,7 @@ class Run {
         this.deleteDepartment();
         break;
         case "View all roles":
-        this.roles.getRoles();
-        this.startProgram();
+        this.roles.getRoles(this.startProgram);
         break;
         case "Add a role":
         this.addRole();
@@ -85,12 +87,13 @@ class Run {
         this.updateRole();
         break;
         case "View all employees":
-        this.employees.getEmployees();
-        this.startProgram();
+        this.employees.getEmployees(this.startProgram);
         break;
         case "View an employee by their manager":
         this.viewManager();
         break;
+        case "View an employee by their role":
+        this.viewRole();
         case "Update an employee's manager":
         this.updateManager();
         break;
@@ -101,10 +104,11 @@ class Run {
         this.deleteEmployee();
         break;
         case "View the budget of each department":
-        this.viewBudget();
+        this.department.departmentByBudget(this.startProgram);
         break;
         case "Quit":
-        this.endProgram();
+            console.log("Goodbye!");
+            process.exit();
         break;
       }
 
@@ -128,11 +132,16 @@ class Run {
  }
 
  deleteDepartment(){
+    db.query(`SELECT name FROM department`, (err, rows) => {
+        const deptChoices = rows.map(row => { 
+            return { value: row.name, name: row.name }
+        });
     inquirer
     .prompt({
-      type: "text",
+      type: "list",
       name: "name",
       message: "Which department would you like to delete?",
+      choices: deptChoices
     })
     //destructure name from the prompt object
     .then(({ name }) => {
@@ -141,36 +150,50 @@ class Run {
       //go back to the initial prompt
       this.startProgram();
  });
-}
+});
+ }
 
 addRole(){
-    inquirer
-    .prompt(addRoleInq)
-    //destructure name from the prompt object
-    .then(({ title, salary, department }) => {
-      this.roles.addRole(title, salary, department);
-      console.log(`The ${title} role was added to the database.`);
-      //go back to the initial prompt
-      this.startProgram();
-    });
+    db.query(`SELECT id, name FROM department`, (err, rows) => {
+        const deptChoices = rows.map(row => { 
+            return { value: row.id, name: row.name }
+        });
+        const choices = addRoleInq(deptChoices);
+
+        inquirer
+        .prompt(choices)
+        //destructure name from the prompt object
+        .then(({ title, salary, department }) => {
+          this.roles.addRole(title, salary, department);
+          console.log(`The ${title} role was added to the database.`);
+          //go back to the initial prompt
+          this.startProgram();
+        });
+    })
 }
 
+//TODO: test me
 deleteRole(){
+    db.query(`SELECT title FROM roles`, (err, rows) => {
+        const deptChoices = rows.map(row => { 
+            return { value: row.title, name: row.title }
+        });
     inquirer
     .prompt({
-      type: "text",
+      type: "list",
       name: "title",
       message: "Which role would you like to delete?",
+      choices: deptChoices
     })
-    //destructure name from the prompt object
     .then(({ title }) => {
       this.roles.deleteRole(title);
       console.log(`The ${title} role was deleted from the database.`);
-      //go back to the initial prompt
       this.startProgram();
  });
+});
 }
 
+//TODO: this needs db
 updateRole(){
     inquirer
     .prompt(updateRoleInq)
@@ -183,6 +206,19 @@ updateRole(){
     })
 }
 
+//TODO: FINISH THESE and fix functions
+viewManager(){
+
+};
+
+viewRole(){
+
+};
+
+updateManager(){
+
+};
+
 addEmployee(){
 
 };
@@ -191,10 +227,6 @@ deleteEmployee(){
 
 };
 
-endProgram(){
-    console.log("Goodbye!");
-    process.exit();
-}
 };
 
 
