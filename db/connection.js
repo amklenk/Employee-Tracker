@@ -11,8 +11,7 @@ const db = mysql.createConnection(
       //enter your own password
       password: "#",
       database: "business",
-    },
-    console.log("Connected to the business database.")
+    }
   );
 
 module.exports = db;
