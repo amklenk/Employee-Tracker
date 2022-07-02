@@ -43,12 +43,35 @@ updateRoleInq= function(roleChoices) {
 }];
   };
 
+addEmployeeInq = function (rolesChoices, managerChoices){
+return [{
+    type: "text",
+    name: "first",
+    message: "What is the employee's first name?"
+},
+{
+    type: "text", 
+    name: "last",
+    message: "What is the employee's last name?"
+}, 
+{ type: "list",
+  name: "role",
+  message: "Which role will this employee have?",
+  choices: rolesChoices
+},{
+    type: "list",
+    name: "manager",
+    message: "Which manager will be the employee's manager?",
+    choices: managerChoices
+}]
+};
+
 //class and methods to run game
 class Run {
  constructor () {
-    this.roles = new Roles();
-    this.department = new Department();
-    this.employees= new Employees();
+    // this.roles = new Roles();
+    // this.department = new Department();
+    // this.employees= new Employees();
  }
 
  welcomeMessage(){
@@ -67,16 +90,18 @@ class Run {
     .then(({ action }) => {
       switch (action){
         case "View all departments":
-        this.department.getDepartments(this.startProgram);
+        Department.getDepartments(this.startProgram);
         break;
         case "Add a department":
+        console.log(this);
         this.addDepartment();
         break;
         case "Delete a department":
+        console.log(this);
         this.deleteDepartment();
         break;
         case "View all roles":
-        this.roles.getRoles(this.startProgram);
+        Roles.getRoles(this.startProgram);
         break;
         case "Add a role":
         this.addRole();
@@ -88,7 +113,7 @@ class Run {
         this.updateRole();
         break;
         case "View all employees":
-        this.employees.getEmployees(this.startProgram);
+        Employees.getEmployees(this.startProgram);
         break;
         case "View an employee by their manager":
         this.viewManager();
@@ -105,7 +130,7 @@ class Run {
         this.deleteEmployee();
         break;
         case "View the budget of each department":
-        this.department.departmentByBudget(this.startProgram);
+        Department.departmentByBudget(this.startProgram);
         break;
         case "Quit":
             console.log("Goodbye!");
@@ -116,7 +141,6 @@ class Run {
     });
  }
 
- //TODO: Not working, says undefined?
  addDepartment(){
     inquirer
     .prompt({
@@ -126,7 +150,7 @@ class Run {
     })
     //destructure name from the prompt object
     .then(({ name }) => {
-      this.department.addDepartment(name);
+      Department.addDepartment(name);
       console.log(`The ${name} department was added to the database.`);
       //go back to the initial prompt
       this.startProgram();
@@ -147,7 +171,7 @@ class Run {
     })
     //destructure name from the prompt object
     .then(({ name }) => {
-      this.department.deleteDepartment(name);
+      Department.deleteDepartment(name);
       console.log(`The ${name} department was deleted from the database.`);
       //go back to the initial prompt
       this.startProgram();
@@ -166,7 +190,7 @@ addRole(){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary, department }) => {
-          this.roles.addRole(title, salary, department);
+          Roles.addRole(title, salary, department);
           console.log(`The ${title} role was added to the database.`);
           //go back to the initial prompt
           this.startProgram();
@@ -187,7 +211,7 @@ deleteRole(){
       choices: roleChoices
     })
     .then(({ title }) => {
-      this.roles.deleteRole(title);
+      Roles.deleteRole(title);
       console.log(`The ${title} role was deleted from the database.`);
       this.startProgram();
  });
@@ -204,7 +228,7 @@ updateRole(){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary }) => {
-          this.roles.updateRole(title, salary);
+          Roles.updateRole(title, salary);
           console.log(`The salary for the ${title} role has been updated in the database.`);
           //go back to the initial prompt
           this.startProgram();
@@ -230,20 +254,20 @@ viewManager(){
         choices: managerChoices
     })
     .then(({ manager }) => {
-        this.employees.viewEmployeeManager(manager, this.startProgram);
+        Employees.viewEmployeeManager(manager, this.startProgram);
         //go back to the initial prompt
         ;
       });
 });
 }
 
-//TODO: says undefined
 viewRole(){
     const sql = `SELECT e.role_id, roles.title AS title
     FROM employees as e
     LEFT JOIN roles ON e.role_id = roles.id
     LEFT JOIN department ON roles.department_id = department.id
-    LEFT JOIN employees AS e2 ON e2.id = e.manager_id`;
+    LEFT JOIN employees AS e2 ON e2.id = e.manager_id
+    WHERE roles.title IS NOT NULL`;
     db.query(sql, (err, rows) => {
         const rolesChoices = rows.map(row => {
             return { value: row.role_id, name: row.title }
@@ -255,24 +279,78 @@ viewRole(){
             choices: rolesChoices
         })
         .then(({ role }) => {
-            this.employees.viewEmployeeRole(role, this.startProgram);
+            Employees.viewEmployeeRole(role, this.startProgram);
         });
     });
     
 }
 
-//TODO: FINISH THESE and fix functions
-updateManager(){
+//TODO: FINISH update
+// updateManager(){
+//     db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
+//         const employeeChoices = rows.map(row => {
+//             return { value: row.employee_name, name: row.employee_name }
+//         });
 
-};
+//     db.query
+//     console.log(`The manager for ${name} has been updated in the database.`);
+// }
 
 addEmployee(){
-
-};
+    db.query(`SELECT e.role_id, roles.title AS title
+    FROM employees as e
+    LEFT JOIN roles ON e.role_id = roles.id
+    LEFT JOIN department ON roles.department_id = department.id
+    LEFT JOIN employees AS e2 ON e2.id = e.manager_id
+    WHERE roles.title IS NOT NULL`, (err, rows) => {
+        const rolesChoices = rows.map(row => {
+            return { value: row.role_id, name: row.title }
+        });
+    const sql = `SELECT e.manager_id, CONCAT(e2.first_name, " ", e2.last_name) AS manager 
+        FROM employees as e
+        LEFT JOIN roles ON e.role_id = roles.id
+        LEFT JOIN department ON roles.department_id = department.id 
+        LEFT JOIN employees AS e2 ON e2.id = e.manager_id
+        WHERE e.manager_id IS NOT NULL`;
+        db.query(sql, (err, rows) => {
+            const managerChoices = rows.map(row => {
+                return { value: row.manager_id, name: row.manager }
+            });
+        const roleManager = addEmployeeInq(rolesChoices, managerChoices);
+            inquirer.prompt(roleManager)
+            .then(({ first, last, role, manager }) => {
+                console.log(role);
+                console.log(manager);
+                Employees.addEmployee( first, last, role, manager);
+                console.log(
+                    `${first} ${last} was added to the database.`
+                  );
+                this.startProgram();
+            })
+        });
+});
+}
 
 deleteEmployee(){
-
-};
+    db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
+        const employeeChoices = rows.map(row => {
+            return { value: row.employee_name, name: row.employee_name }
+        });
+    
+        inquirer.prompt({
+            type: "list", 
+            name: "employee",
+            message: "Which employee would you like to delete?",
+            choices: employeeChoices
+        })
+        .then( ({ employee }) => {
+            Employees.deleteEmployee(employee);
+            console.log(`${employee} has been deleted from the database.`);
+            //go back to the initial prompt
+            this.startProgram();
+          })
+    });
+    }
 
 };
 
