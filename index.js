@@ -25,22 +25,23 @@ addRoleInq = function (departmentChoices) {
       name: "department",
       message: "What is the department of the new role?",
       choices: departmentChoices
-  }]
+  }];
 };
 
-//TODO: db call to have updated
-  updateRoleInq= [
+updateRoleInq= function(roleChoices) {
+    return[
     {
         type: "list",
         name: "title",
-        message: "What is the title of the role?",
-        choices: ["Sales Lead", "Salesperson", "Lead Engineer", "Software Engineer", "Account Manager", "Accountant", "Legal Team Lead", "Lawyer"]
+        message: "Which role would you like to update?",
+        choices: roleChoices
   },
 {
     type: "text",
     name: "salary",
     message: "What is the new salary of the role?",
-}]
+}];
+  };
 
 //class and methods to run game
 class Run {
@@ -55,7 +56,7 @@ class Run {
     this.startProgram();
  }
 
- startProgram () {
+ startProgram() {
     inquirer
     .prompt({
       type: "list",
@@ -115,6 +116,7 @@ class Run {
     });
  }
 
+ //TODO: Not working, says undefined?
  addDepartment(){
     inquirer
     .prompt({
@@ -172,10 +174,9 @@ addRole(){
     })
 }
 
-//TODO: test me
 deleteRole(){
     db.query(`SELECT title FROM roles`, (err, rows) => {
-        const deptChoices = rows.map(row => { 
+        const roleChoices = rows.map(row => { 
             return { value: row.title, name: row.title }
         });
     inquirer
@@ -183,7 +184,7 @@ deleteRole(){
       type: "list",
       name: "title",
       message: "Which role would you like to delete?",
-      choices: deptChoices
+      choices: roleChoices
     })
     .then(({ title }) => {
       this.roles.deleteRole(title);
@@ -193,28 +194,74 @@ deleteRole(){
 });
 }
 
-//TODO: this needs db
 updateRole(){
-    inquirer
-    .prompt(updateRoleInq)
-    //destructure name from the prompt object
-    .then(({ title, salary }) => {
-      this.roles.updateRole(title, salary);
-      console.log(`The salary for the ${title} role has been updated in the database.`);
-      //go back to the initial prompt
-      this.startProgram();
+    db.query(`SELECT title FROM roles`, (err, rows) => {
+        const roleChoices = rows.map(row => {
+            return { value: row.title, name: row.title }
+        });
+        const choices = updateRoleInq(roleChoices);
+        inquirer
+        .prompt(choices)
+        //destructure name from the prompt object
+        .then(({ title, salary }) => {
+          this.roles.updateRole(title, salary);
+          console.log(`The salary for the ${title} role has been updated in the database.`);
+          //go back to the initial prompt
+          this.startProgram();
+        });
+    });
+}
+
+viewManager(){
+    const sql = `SELECT CONCAT(e2.first_name, " ", e2.last_name) AS manager 
+    FROM employees as e 
+    LEFT JOIN roles ON e.role_id = roles.id 
+    LEFT JOIN department ON roles.department_id = department.id 
+    LEFT JOIN employees AS e2 ON e2.id = e.manager_id
+    WHERE e.manager_id IS NOT NULL`;
+    db.query(sql, (err, rows) => {
+        const managerChoices = rows.map(row => {
+            return { value: row.manager, name: row.manager }
+        });
+    inquirer.prompt({
+        type: "list",
+        name: "manager",
+        message: "Select a manager to see their employees.",
+        choices: managerChoices
     })
+    .then(({ manager }) => {
+        this.employees.viewEmployeeManager(manager, this.startProgram);
+        //go back to the initial prompt
+        ;
+      });
+});
+}
+
+//TODO: says undefined
+viewRole(){
+    const sql = `SELECT e.role_id, roles.title AS title
+    FROM employees as e
+    LEFT JOIN roles ON e.role_id = roles.id
+    LEFT JOIN department ON roles.department_id = department.id
+    LEFT JOIN employees AS e2 ON e2.id = e.manager_id`;
+    db.query(sql, (err, rows) => {
+        const rolesChoices = rows.map(row => {
+            return { value: row.role_id, name: row.title }
+        });
+        inquirer.prompt({
+            type: "list",
+            name: "role",
+            message: "Select the role to see the employees.",
+            choices: rolesChoices
+        })
+        .then(({ role }) => {
+            this.employees.viewEmployeeRole(role, this.startProgram);
+        });
+    });
+    
 }
 
 //TODO: FINISH THESE and fix functions
-viewManager(){
-
-};
-
-viewRole(){
-
-};
-
 updateManager(){
 
 };
