@@ -1,5 +1,6 @@
 //require
 const inquirer = require("inquirer");
+const asciiart = require ("asciiart-logo");
 const Department = require("./lib/Department");
 const Roles = require("./lib/Roles");
 const Employees = require("./lib/Employees");
@@ -66,6 +67,21 @@ return [{
 }]
 };
 
+updateEmployeeInq = function (employeeChoices, managerChoices){
+return [{
+    type: "list",
+    name: "employee",
+    message: "Which employee would you like to update?",
+    choices: employeeChoices
+},
+{
+    type: "list",
+    name: "manager",
+    message: "Which manager is the employee's new manager?",
+    choices: managerChoices
+}]
+};
+
 //class and methods to run game
 class Run {
  constructor () {
@@ -75,6 +91,7 @@ class Run {
  }
 
  welcomeMessage(){
+    //TODO: Put Logo here
     console.log("Welcome to Employee-Tracker!");
     this.startProgram();
  }
@@ -285,16 +302,34 @@ viewRole(){
     
 }
 
-//TODO: FINISH update
-// updateManager(){
-//     db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
-//         const employeeChoices = rows.map(row => {
-//             return { value: row.employee_name, name: row.employee_name }
-//         });
+//TODO: does not work
+updateManager(){
+    db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
+        const employeeChoices = rows.map(row => {
+            return { value: row.employee_name, name: row.employee_name }
+        });
 
-//     db.query
-//     console.log(`The manager for ${name} has been updated in the database.`);
-// }
+    const sql = `SELECT e.id, CONCAT(e.first_name, " ", e.last_name) AS manager 
+    FROM employees as e 
+    LEFT JOIN roles ON e.role_id = roles.id 
+    LEFT JOIN department ON roles.department_id = department.id 
+    LEFT JOIN employees AS e2 ON e2.id = e.manager_id
+    WHERE e.manager_id IS NULL`;
+    db.query(sql, (err, rows) => {
+        const managerChoices = rows.map(row => {
+            return { value: row.id, name: row.manager }
+        });
+    const choices = updateEmployeeInq(employeeChoices, managerChoices);
+    inquirer.prompt(choices)
+    .then( ({ employee, manager }) => {
+        Employees.updateEmployee(employee, manager);
+        console.log(`${employee}'s manager was updated in the database.`);
+        //go back to the initial prompt
+        this.startProgram();
+    });
+    });
+});
+}
 
 addEmployee(){
     db.query(`SELECT e.role_id, roles.title AS title
