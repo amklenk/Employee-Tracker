@@ -1,9 +1,11 @@
 //require
 const inquirer = require("inquirer");
-const asciiart = require ("asciiart-logo");
-const Department = require("./lib/Department");
-const Roles = require("./lib/Roles");
-const Employees = require("./lib/Employees");
+const logo = require('asciiart-logo');
+// const config = require('./package.json');
+// console.log(logo(config).render());
+const { getDepartments, addDepartment, deleteDepartment, departmentByBudget } = require("./lib/Department");
+const { getRoles, addRole, deleteRole, updateRole } = require("./lib/Roles");
+const { getEmployees, viewEmployeeManager, viewEmployeeRole, updateEmployee, addEmployee, deleteEmployee } = require("./lib/Employees");
 const db = require("./db/connection");
 
 //Inquirer Arrays
@@ -82,21 +84,26 @@ return [{
 }]
 };
 
-//class and methods to run game
-class Run {
- constructor () {
-    // this.roles = new Roles();
-    // this.department = new Department();
-    // this.employees= new Employees();
- }
 
- welcomeMessage(){
+ welcomeMessage = function(){
     //TODO: Put Logo here
-    console.log("Welcome to Employee-Tracker!");
-    this.startProgram();
- }
+    console.log(
+        logo({
+            name: 'Employee Tracker',
+            font: 'Broadway KB',
+            lineChars: 10,
+            padding: 2,
+            margin: 2,
+            borderColor: 'grey',
+            logoColor: 'bold-blue',
+            textColor: 'blue',
+        })
+        .render()
+    );
+    startProgram();
+ };
 
- startProgram() {
+ startProgram = function () {
     inquirer
     .prompt({
       type: "list",
@@ -107,47 +114,46 @@ class Run {
     .then(({ action }) => {
       switch (action){
         case "View all departments":
-        Department.getDepartments(this.startProgram);
+        getDepartments();
         break;
         case "Add a department":
-        console.log(this);
-        this.addDepartment();
+        addDepartmentMethod();
         break;
         case "Delete a department":
-        console.log(this);
-        this.deleteDepartment();
+        deleteDepartmentMethod();
         break;
         case "View all roles":
-        Roles.getRoles(this.startProgram);
+        getRoles();
         break;
         case "Add a role":
-        this.addRole();
+        addRoleMethod();
         break;
         case "Delete a role":
-        this.deleteRole();
+        deleteRoleMethod();
         break;
         case "Update a role's salary":
-        this.updateRole();
+        updateRoleMethod();
         break;
         case "View all employees":
-        Employees.getEmployees(this.startProgram);
+        getEmployees();
         break;
         case "View an employee by their manager":
-        this.viewManager();
+        viewManagerMethod();
         break;
         case "View an employee by their role":
-        this.viewRole();
+        viewRoleMethod();
+        break;
         case "Update an employee's manager":
-        this.updateManager();
+        updateManagerMethod();
         break;
         case "Add an employee":
-        this.addEmployee();
+        addEmployeeMethod();
         break;
         case "Delete an Employee":
-        this.deleteEmployee();
+        deleteEmployeeMethod();
         break;
         case "View the budget of each department":
-        Department.departmentByBudget(this.startProgram);
+        departmentByBudget();
         break;
         case "Quit":
             console.log("Goodbye!");
@@ -156,9 +162,9 @@ class Run {
       }
 
     });
- }
+ };
 
- addDepartment(){
+ addDepartmentMethod = function (){
     inquirer
     .prompt({
       type: "text",
@@ -167,14 +173,12 @@ class Run {
     })
     //destructure name from the prompt object
     .then(({ name }) => {
-      Department.addDepartment(name);
+      addDepartment(name);
       console.log(`The ${name} department was added to the database.`);
-      //go back to the initial prompt
-      this.startProgram();
-    });
- }
+    })
+ };
 
- deleteDepartment(){
+ deleteDepartmentMethod = function (){
     db.query(`SELECT name FROM department`, (err, rows) => {
         const deptChoices = rows.map(row => { 
             return { value: row.name, name: row.name }
@@ -188,15 +192,13 @@ class Run {
     })
     //destructure name from the prompt object
     .then(({ name }) => {
-      Department.deleteDepartment(name);
+      deleteDepartment(name);
       console.log(`The ${name} department was deleted from the database.`);
-      //go back to the initial prompt
-      this.startProgram();
- });
+ })
 });
- }
+ };
 
-addRole(){
+addRoleMethod = function (){
     db.query(`SELECT id, name FROM department`, (err, rows) => {
         const deptChoices = rows.map(row => { 
             return { value: row.id, name: row.name }
@@ -207,15 +209,13 @@ addRole(){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary, department }) => {
-          Roles.addRole(title, salary, department);
-          console.log(`The ${title} role was added to the database.`);
-          //go back to the initial prompt
-          this.startProgram();
-        });
+          addRole(title, salary, department);
+          console.log(`The ${title} role was added to the database.`)
+        })
     })
-}
+};
 
-deleteRole(){
+deleteRoleMethod = function(){
     db.query(`SELECT title FROM roles`, (err, rows) => {
         const roleChoices = rows.map(row => { 
             return { value: row.title, name: row.title }
@@ -228,14 +228,13 @@ deleteRole(){
       choices: roleChoices
     })
     .then(({ title }) => {
-      Roles.deleteRole(title);
+      deleteRole(title);
       console.log(`The ${title} role was deleted from the database.`);
-      this.startProgram();
  });
 });
-}
+};
 
-updateRole(){
+updateRoleMethod = function (){
     db.query(`SELECT title FROM roles`, (err, rows) => {
         const roleChoices = rows.map(row => {
             return { value: row.title, name: row.title }
@@ -245,21 +244,19 @@ updateRole(){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary }) => {
-          Roles.updateRole(title, salary);
+          updateRole(title, salary);
           console.log(`The salary for the ${title} role has been updated in the database.`);
-          //go back to the initial prompt
-          this.startProgram();
-        });
+        })
     });
-}
+};
 
-viewManager(){
-    const sql = `SELECT CONCAT(e2.first_name, " ", e2.last_name) AS manager 
+viewManagerMethod = function (){
+    const sql = `SELECT e.id, CONCAT(e.first_name, " ", e.last_name) AS manager 
     FROM employees as e 
     LEFT JOIN roles ON e.role_id = roles.id 
     LEFT JOIN department ON roles.department_id = department.id 
     LEFT JOIN employees AS e2 ON e2.id = e.manager_id
-    WHERE e.manager_id IS NOT NULL`;
+    WHERE e.manager_id IS NULL`;
     db.query(sql, (err, rows) => {
         const managerChoices = rows.map(row => {
             return { value: row.manager, name: row.manager }
@@ -271,14 +268,12 @@ viewManager(){
         choices: managerChoices
     })
     .then(({ manager }) => {
-        Employees.viewEmployeeManager(manager, this.startProgram);
-        //go back to the initial prompt
-        ;
+        viewEmployeeManager(manager);
       });
 });
 }
 
-viewRole(){
+viewRoleMethod = function (){
     const sql = `SELECT e.role_id, roles.title AS title
     FROM employees as e
     LEFT JOIN roles ON e.role_id = roles.id
@@ -296,14 +291,14 @@ viewRole(){
             choices: rolesChoices
         })
         .then(({ role }) => {
-            Employees.viewEmployeeRole(role, this.startProgram);
+            viewEmployeeRole(role);
         });
     });
     
-}
+};
 
-//TODO: does not work
-updateManager(){
+//TODO: not reaching my then
+updateManagerMethod = function (){
     db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
         const employeeChoices = rows.map(row => {
             return { value: row.employee_name, name: row.employee_name }
@@ -320,18 +315,18 @@ updateManager(){
             return { value: row.id, name: row.manager }
         });
     const choices = updateEmployeeInq(employeeChoices, managerChoices);
-    inquirer.prompt(choices)
-    .then( ({ employee, manager }) => {
-        Employees.updateEmployee(employee, manager);
-        console.log(`${employee}'s manager was updated in the database.`);
-        //go back to the initial prompt
-        this.startProgram();
-    });
+    inquirer.prompt(choices).then(console.log("Hello!")
+        // ({ employee, manager }) => {
+        // console.log(employee);
+        // console.log(manager);
+        // updateEmployee(employee, manager);
+        // console.log(`${employee}'s manager was updated in the database.`); }
+    )
     });
 });
-}
+};
 
-addEmployee(){
+addEmployeeMethod = function (){
     db.query(`SELECT e.role_id, roles.title AS title
     FROM employees as e
     LEFT JOIN roles ON e.role_id = roles.id
@@ -354,19 +349,16 @@ addEmployee(){
         const roleManager = addEmployeeInq(rolesChoices, managerChoices);
             inquirer.prompt(roleManager)
             .then(({ first, last, role, manager }) => {
-                console.log(role);
-                console.log(manager);
-                Employees.addEmployee( first, last, role, manager);
+                addEmployee( first, last, role, manager );
                 console.log(
                     `${first} ${last} was added to the database.`
                   );
-                this.startProgram();
             })
         });
 });
-}
+};
 
-deleteEmployee(){
+deleteEmployeeMethod = function (){
     db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
         const employeeChoices = rows.map(row => {
             return { value: row.employee_name, name: row.employee_name }
@@ -379,15 +371,12 @@ deleteEmployee(){
             choices: employeeChoices
         })
         .then( ({ employee }) => {
-            Employees.deleteEmployee(employee);
+            deleteEmployee(employee);
+            //not showing up
             console.log(`${employee} has been deleted from the database.`);
-            //go back to the initial prompt
-            this.startProgram();
           })
     });
-    }
+    };
 
-};
-
-
-new Run().welcomeMessage();
+//call welcome mesage
+welcomeMessage();
