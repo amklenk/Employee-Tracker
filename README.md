@@ -26,7 +26,7 @@ Visit the GitHub repository, Employee-Tracker (see the link below), to fork and 
 ````````````
 npm install
 ````````````
-The .gitignore file is set up in the root directory along with the index.js file that contains the code to run the command-line app. The lib folder contains the Department.js, Employees.js, and the Roles.js files, which contain the classes that run the databases queries for each corresponding MySQL table. The db folder contains the connection.js folder (for the user to enter their MySQL username and password), db.sql (the database MySQL queries), schema.sql (the table MySQL queries), and seeds.sql (the queries to populate the tables in MySQL).
+The .gitignore file is set up in the root directory along with the index.js file that contains the code to run the command-line app. The lib folder contains the Department.js, Employees.js, and the Roles.js files, which contain the functions that run the databases queries for each corresponding MySQL table. The db folder contains the connection.js folder (for the user to enter their MySQL username and password), db.sql (the database MySQL queries), schema.sql (the table MySQL queries), and seeds.sql (the queries to populate the tables in MySQL).
 
 ## Links
 - [GitHub Repository](https://github.com/amklenk/Employee-Tracker)
@@ -39,10 +39,17 @@ CLI App
 ![CLI image]()
 
 
-Before navigating the application, the user needs to put their MySQL username and password into lines 10 and 12 of connection.js in the db folder. The application is navigable via opening the index.js file in an integrated terminal. To run the application, the user should type
-`````````````
-node index.js
-`````````````
+Before navigating the application, the user needs to create a .env file in their root directory to connect to their local MySQL database. They will need to put the following code in their .env file:
+
+``````````````````````````````
+DB_PASSWORD="userpasswordhere"
+DB_DATABASE="business"
+``````````````````````````````
+
+ The application is navigable via opening the index.js file in an integrated terminal. To run the application, the user should type
+``````````
+npm start
+``````````
 into the terminal. All of the user data is entered using Inquirer prompts. The user will receive their data in tables or a message to let them know how they changed the database in the terminal.
 
 ## License

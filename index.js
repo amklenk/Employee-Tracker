@@ -1,32 +1,46 @@
 //require
-const inquirer = require("inquirer");
+const inquirer = require('inquirer');
 const logo = require('asciiart-logo');
-// const config = require('./package.json');
-// console.log(logo(config).render());
-const { getDepartments, addDepartment, deleteDepartment, departmentByBudget } = require("./lib/Department");
-const { getRoles, addRole, deleteRole, updateRole } = require("./lib/Roles");
-const { getEmployees, viewEmployeeManager, viewEmployeeRole, updateEmployee, addEmployee, deleteEmployee } = require("./lib/Employees");
-const db = require("./db/connection");
+const db = require('./db/connection');
+const { getDepartments, addDepartment, deleteDepartment, departmentByBudget } = require('./lib/Department');
+const { getRoles, addRole, deleteRole, updateRole } = require('./lib/Roles');
+const { getEmployees, viewEmployeeManager, viewEmployeeRole, updateEmployee, addEmployee, deleteEmployee } = require('./lib/Employees');
 
 //Inquirer Arrays
-choicesArr = ["View all departments", "Add a department", "Delete a department", "View all roles", "Add a role", "Delete a role", "Update a role's salary", "View all employees", "View an employee by their manager", "View an employee by their role", "Update an employee's manager", "Add an employee", "Delete an Employee", "View the budget of each department", "Quit"
+choicesArr = ['View all departments', 'Add a department', 'Delete a department', 'View all roles', 'Add a role', 'Delete a role', "Update a role's salary", 'View all employees', 'View an employee by their manager', 'View an employee by their role', "Update an employee's manager", 'Add an employee', 'Delete an Employee', 'View the budget of each department', 'Quit'
 ];
 
 addRoleInq = function (departmentChoices) {
     return [{
-    type: "text",
-    name: "title",
-    message: "What is the title of the new role?",
+    type: 'text',
+    name: 'title',
+    message: 'What is the title of the new role?',
+    validate: titleInput => {
+        if(titleInput) {
+            return true;
+        } else {
+            console.log('Please enter the title of the new role.');
+            return false;
+        }
+    }
   },
   {
-      type: "text",
-      name: "salary",
-      message: "What is the salary of the new role?",
+      type: 'text',
+      name: 'salary',
+      message: 'What is the salary of the new role?',
+      validate: salaryInput => {
+        if(salaryInput) {
+            return true;
+        } else {
+            console.log('Please enter the salary of the new role.');
+            return false;
+        }
+    }
   },
   {
-      type: "list",
-      name: "department",
-      message: "What is the department of the new role?",
+      type: 'list',
+      name: 'department',
+      message: 'What is the department of the new role?',
       choices: departmentChoices
   }];
 };
@@ -34,36 +48,60 @@ addRoleInq = function (departmentChoices) {
 updateRoleInq= function(roleChoices) {
     return[
     {
-        type: "list",
-        name: "title",
-        message: "Which role would you like to update?",
+        type: 'list',
+        name: 'title',
+        message: 'Which role would you like to update?',
         choices: roleChoices
   },
 {
-    type: "text",
-    name: "salary",
-    message: "What is the new salary of the role?",
+    type: 'text',
+    name: 'salary',
+    message: 'What is the new salary of the role?',
+    validate: salaryInput => {
+        if(salaryInput) {
+            return true;
+        } else {
+            console.log('Please enter the new salary.');
+            return false;
+        }
+    }
 }];
   };
 
 addEmployeeInq = function (rolesChoices, managerChoices){
 return [{
-    type: "text",
-    name: "first",
-    message: "What is the employee's first name?"
+    type: 'text',
+    name: 'first',
+    message: "What is the employee's first name?",
+    validate: firstInput => {
+        if(firstInput) {
+            return true;
+        } else {
+            console.log('Please enter the first name of the new employee.');
+            return false;
+        }
+    }
 },
 {
-    type: "text", 
-    name: "last",
-    message: "What is the employee's last name?"
+    type: 'text', 
+    name: 'last',
+    message: "What is the employee's last name?",
+    validate: lastInput => {
+        if(lastInput) {
+            return true;
+        } else {
+            console.log('Please enter the last name of the new employee.');
+            return false;
+        }
+    }
 }, 
-{ type: "list",
-  name: "role",
-  message: "Which role will this employee have?",
+{ type: 'list',
+  name: 'role',
+  message: 'Which role will this employee have?',
   choices: rolesChoices
 },{
-    type: "list",
-    name: "manager",
+    type: 'list',
+    name: 'manager',
     message: "Which manager will be the employee's manager?",
     choices: managerChoices
 }]
@@ -71,14 +109,14 @@ return [{
 
 updateEmployeeInq = function (employeeChoices, managerChoices){
 return [{
-    type: "list",
-    name: "employee",
-    message: "Which employee would you like to update?",
+    type: 'list',
+    name: 'employee',
+    message: 'Which employee would you like to update?',
     choices: employeeChoices
 },
 {
-    type: "list",
-    name: "manager",
+    type: 'list',
+    name: 'manager',
     message: "Which manager is the employee's new manager?",
     choices: managerChoices
 }]
@@ -86,7 +124,6 @@ return [{
 
 
  welcomeMessage = function(){
-    //TODO: Put Logo here
     console.log(
         logo({
             name: 'Employee Tracker',
@@ -106,59 +143,58 @@ return [{
  startProgram = function () {
     inquirer
     .prompt({
-      type: "list",
-      name: "action",
-      message: "What would you like to do?",
+      type: 'list',
+      name: 'action',
+      message: 'What would you like to do?',
       choices: choicesArr
     })
     .then(({ action }) => {
       switch (action){
-        case "View all departments":
+        case 'View all departments':
         getDepartments();
         break;
-        case "Add a department":
+        case 'Add a department':
         addDepartmentMethod();
         break;
-        case "Delete a department":
+        case 'Delete a department':
         deleteDepartmentMethod();
         break;
-        case "View all roles":
+        case 'View all roles':
         getRoles();
         break;
-        case "Add a role":
+        case 'Add a role':
         addRoleMethod();
         break;
-        case "Delete a role":
+        case 'Delete a role':
         deleteRoleMethod();
         break;
         case "Update a role's salary":
         updateRoleMethod();
         break;
-        case "View all employees":
+        case 'View all employees':
         getEmployees();
         break;
-        case "View an employee by their manager":
+        case 'View an employee by their manager':
         viewManagerMethod();
         break;
-        case "View an employee by their role":
+        case 'View an employee by their role':
         viewRoleMethod();
         break;
         case "Update an employee's manager":
         updateManagerMethod();
         break;
-        case "Add an employee":
+        case 'Add an employee':
         addEmployeeMethod();
         break;
-        case "Delete an Employee":
+        case 'Delete an Employee':
         deleteEmployeeMethod();
         break;
-        case "View the budget of each department":
+        case 'View the budget of each department':
         departmentByBudget();
         break;
-        case "Quit":
-            console.log("Goodbye!");
+        case 'Quit':
+            console.log('Goodbye!');
             process.exit();
-        break;
       }
 
     });
@@ -167,14 +203,21 @@ return [{
  addDepartmentMethod = function (){
     inquirer
     .prompt({
-      type: "text",
-      name: "name",
-      message: "What is the name of the new department?",
+      type: 'text',
+      name: 'name',
+      message: 'What is the name of the new department?',
+      validate: nameInput => {
+        if(nameInput) {
+            return true;
+        } else {
+            console.log('Please enter the name of the new department.');
+            return false;
+        }
+    }
     })
-    //destructure name from the prompt object
     .then(({ name }) => {
-      addDepartment(name);
       console.log(`The ${name} department was added to the database.`);
+      addDepartment(name);
     })
  };
 
@@ -185,15 +228,15 @@ return [{
         });
     inquirer
     .prompt({
-      type: "list",
-      name: "name",
-      message: "Which department would you like to delete?",
+      type: 'list',
+      name: 'name',
+      message: 'Which department would you like to delete?',
       choices: deptChoices
     })
     //destructure name from the prompt object
     .then(({ name }) => {
-      deleteDepartment(name);
       console.log(`The ${name} department was deleted from the database.`);
+      deleteDepartment(name);
  })
 });
  };
@@ -209,8 +252,8 @@ addRoleMethod = function (){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary, department }) => {
+          console.log(`The ${title} role was added to the database.`);
           addRole(title, salary, department);
-          console.log(`The ${title} role was added to the database.`)
         })
     })
 };
@@ -222,14 +265,14 @@ deleteRoleMethod = function(){
         });
     inquirer
     .prompt({
-      type: "list",
-      name: "title",
-      message: "Which role would you like to delete?",
+      type: 'list',
+      name: 'title',
+      message: 'Which role would you like to delete?',
       choices: roleChoices
     })
     .then(({ title }) => {
+    console.log(`The ${title} role was deleted from the database.`);
       deleteRole(title);
-      console.log(`The ${title} role was deleted from the database.`);
  });
 });
 };
@@ -244,8 +287,8 @@ updateRoleMethod = function (){
         .prompt(choices)
         //destructure name from the prompt object
         .then(({ title, salary }) => {
-          updateRole(title, salary);
           console.log(`The salary for the ${title} role has been updated in the database.`);
+          updateRole(title, salary);
         })
     });
 };
@@ -262,42 +305,36 @@ viewManagerMethod = function (){
             return { value: row.manager, name: row.manager }
         });
     inquirer.prompt({
-        type: "list",
-        name: "manager",
-        message: "Select a manager to see their employees.",
+        type: 'list',
+        name: 'manager',
+        message: 'Select a manager to see their employees.',
         choices: managerChoices
     })
     .then(({ manager }) => {
         viewEmployeeManager(manager);
       });
 });
-}
+};
 
 viewRoleMethod = function (){
-    const sql = `SELECT e.role_id, roles.title AS title
-    FROM employees as e
-    LEFT JOIN roles ON e.role_id = roles.id
-    LEFT JOIN department ON roles.department_id = department.id
-    LEFT JOIN employees AS e2 ON e2.id = e.manager_id
-    WHERE roles.title IS NOT NULL`;
+    const sql = `SELECT id, title
+    FROM roles`;
     db.query(sql, (err, rows) => {
         const rolesChoices = rows.map(row => {
-            return { value: row.role_id, name: row.title }
+            return { value: row.id, name: row.title }
         });
         inquirer.prompt({
-            type: "list",
-            name: "role",
-            message: "Select the role to see the employees.",
+            type: 'list',
+            name: 'role',
+            message: 'Select the role to see the employees.',
             choices: rolesChoices
         })
         .then(({ role }) => {
             viewEmployeeRole(role);
         });
     });
-    
 };
 
-//TODO: not reaching my then
 updateManagerMethod = function (){
     db.query(`SELECT CONCAT (first_name, " ", last_name) AS employee_name FROM employees`, (err, rows) => {
         const employeeChoices = rows.map(row => {
@@ -315,12 +352,11 @@ updateManagerMethod = function (){
             return { value: row.id, name: row.manager }
         });
     const choices = updateEmployeeInq(employeeChoices, managerChoices);
-    inquirer.prompt(choices).then(console.log("Hello!")
-        // ({ employee, manager }) => {
-        // console.log(employee);
-        // console.log(manager);
-        // updateEmployee(employee, manager);
-        // console.log(`${employee}'s manager was updated in the database.`); }
+    inquirer.prompt(choices).then(
+        ({ employee, manager }) => {
+           console.log(`${employee}'s manager was updated in the database.`); 
+           updateEmployee(employee, manager);
+             }
     )
     });
 });
@@ -349,10 +385,10 @@ addEmployeeMethod = function (){
         const roleManager = addEmployeeInq(rolesChoices, managerChoices);
             inquirer.prompt(roleManager)
             .then(({ first, last, role, manager }) => {
-                addEmployee( first, last, role, manager );
                 console.log(
                     `${first} ${last} was added to the database.`
                   );
+                addEmployee( first, last, role, manager );
             })
         });
 });
@@ -365,18 +401,17 @@ deleteEmployeeMethod = function (){
         });
     
         inquirer.prompt({
-            type: "list", 
-            name: "employee",
-            message: "Which employee would you like to delete?",
+            type: 'list', 
+            name: 'employee',
+            message: 'Which employee would you like to delete?',
             choices: employeeChoices
         })
         .then( ({ employee }) => {
-            deleteEmployee(employee);
-            //not showing up
             console.log(`${employee} has been deleted from the database.`);
+            deleteEmployee(employee);
           })
     });
-    };
+};
 
 //call welcome mesage
 welcomeMessage();

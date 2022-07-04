@@ -1,6 +1,6 @@
 //require
 const mysql = require("mysql2");
-//is there where I would require the password protector?
+require('dotenv').config();
 
 //middleware
 const db = mysql.createConnection(
@@ -9,8 +9,8 @@ const db = mysql.createConnection(
       //enter your own username, otherwise root
       user: "root",
       //enter your own password
-      password: "",
-      database: "business",
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
     }
   );
 
