@@ -30,9 +30,9 @@ The .gitignore file is set up in the root directory along with the index.js file
 
 ## Links
 - [GitHub Repository](https://github.com/amklenk/Employee-Tracker)
-- [Walthrough Video Link for Startup and View Functionality]()
-- [Walthrough Video Link for Add/Delete Functionality]()
-- [Walthrough Video Link for Update Functionality]()
+- [Walthrough Video Link for Startup and View Functionality](https://drive.google.com/file/d/1RvlynB89ok4dxtSfxp5KxtMXsjE_pAxG/view?usp=sharing)
+- [Walthrough Video Link for Add/Delete Functionality](https://drive.google.com/file/d/1hAKKsH1StMlCx1Mrzv7p-BE2-xyMUnaF/view?usp=sharing)
+- [Walthrough Video Link for Update/Quit Functionality](https://drive.google.com/file/d/1olJDpmPaTZe6e9g4VSKCuM27hN8qcf8Z/view?usp=sharing)
 
 ## Usage
 The following image is a screenshot of the command-line application, Employee Tracker.
